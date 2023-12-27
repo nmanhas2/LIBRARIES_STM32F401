@@ -88,6 +88,26 @@ typedef enum
 	GPIOx_PIN_ANALOG,
 }GPIOx_PIN_MODE;
 
+typedef enum
+{
+	GPIOx_ALT_AF0,
+	GPIOx_ALT_AF1,
+	GPIOx_ALT_AF2,
+	GPIOx_ALT_AF3,
+	GPIOx_ALT_AF4,
+	GPIOx_ALT_AF5,
+	GPIOx_ALT_AF6,
+	GPIOx_ALT_AF7,
+	GPIOx_ALT_AF8,
+	GPIOx_ALT_AF9,
+	GPIOx_ALT_AF10,
+	GPIOx_ALT_AF11,
+	GPIOx_ALT_AF12,
+	GPIOx_ALT_AF13,
+	GPIOx_ALT_AF14,
+	GPIOx_ALT_AF15
+}GPIOx_ALT_FUNC;
+
 /*
  * Struct to configure a GPIO pin and
  * it's mode
@@ -95,7 +115,7 @@ typedef enum
 typedef struct{
 	GPIOx_PIN_NUM PIN_NUM;
 	GPIOx_PIN_MODE PIN_MODE;
-	//add alternate func
+	GPIOx_ALT_FUNC ALT_FUNC;
 }GPIOx_PIN_CONFIG;
 
 //toggling output
