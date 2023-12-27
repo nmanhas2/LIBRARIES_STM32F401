@@ -88,6 +88,16 @@ typedef enum
 	GPIOx_PIN_ANALOG,
 }GPIOx_PIN_MODE;
 
+/*
+ * There are 16 alternate functions to select from for
+ * each GPIO, some are mapped to a function and some are not.
+ * Each constant within this enum represent one of the 16 bits
+ * that correspond to one of the 16 alternate functions that
+ * are available. These are set within the AFRH/AFRL registers
+ *
+ * Check Table 9 in the datasheet to see the mapping of each
+ * function, and 8.4.9/8.4.10 in Ref Manual to see the registers
+ */
 typedef enum
 {
 	GPIOx_ALT_AF0,

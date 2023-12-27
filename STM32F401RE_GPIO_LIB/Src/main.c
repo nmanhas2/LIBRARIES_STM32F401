@@ -14,13 +14,10 @@
 #include "stm32f4xx.h"
 #include "gpio.h"
 
+/* TESTS: */
 //#define TOGGLE_TEST  //un-comment this to test for output toggle on PA5
-
-//#define OUTPUT_WRITE //un-comment this to test for output write to PA5, should be a
-					   //similar result to TOGGLE_TEST
-
-//#define INPUT_TEST	  //un-comment this to test input for PC13, PA5 should go high when PC13 is high
-
+//#define OUTPUT_WRITE //un-comment this to test for output write to PA5, should be a similar result to TOGGLE_TEST
+//#define INPUT_TEST //un-comment this to test input for PC13, PA5 should go high when PC13 is high
 //#define OUTPUT_SETRESET //un-comment this to test output bit set/reset, should be similar to INPUT_TEST
 
 GPIOx_PIN_CONFIG PIN5; //PA5

@@ -153,7 +153,7 @@ void gpio_alt_func(GPIO_TypeDef* gpioX, GPIOx_PIN_CONFIG pin)
 {
 	//Px0 to Px7 are in the AFRL register
 	//with Px8 to Px15 being on the AFRH register
-	//just need to set the corresponding 4 bits of the pin
+	//just need to set the corresponding 4 bits
 	//to the alternate function you want
 	if(pin.PIN_NUM <=  7)
 	{
