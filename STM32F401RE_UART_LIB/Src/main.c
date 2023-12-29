@@ -9,7 +9,7 @@
  * Testing USART library for STM32F401RE, using USART2 PA2 for TX, PA3 for RX
  *
  ******************************************************************************
- */
+*/
 #include "stm32f4xx.h"
 #include "gpio.h"
 #include "uart.h"
