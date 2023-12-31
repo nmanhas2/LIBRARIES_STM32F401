@@ -28,7 +28,7 @@ int main(void)
 	UART2.TX = USART2_TX_PA2;
 	UART2.USART = USART2;
 
-	uart_init(UART2, 9600); //init uart at 115200 baud
+	uart_init(UART2, 9600); //init uart at 9600 baud
 
 	#ifdef DELAY_TEST
 		int i = 1; //variable to hold number of seconds
