@@ -33,7 +33,7 @@ int timestamp = 0; //used to store input capture counter, global allows one to u
 
 int main(void)
 {
-	//UART for 9600 baudrate, PA3 as RX, PA2 as TX for USART2
+	//UART with PA3 as RX, PA2 as TX for USART2
 	UART2.PORT = GPIOA;
 	UART2.RX = USART2_RX_PA3;
 	UART2.TX = USART2_TX_PA2;
@@ -44,7 +44,7 @@ int main(void)
 	TMR2.PRESCALER = 1600;
 	TMR2.TMR = TIM2;
 
-	//init uart at 9600 baud
+	//init uart at 115200 baud
 	uart_init(UART2, 115200);
 
 	#ifdef DOWN_TEST
