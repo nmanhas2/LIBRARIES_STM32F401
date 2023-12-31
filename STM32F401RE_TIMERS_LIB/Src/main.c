@@ -21,9 +21,12 @@
 //#define DOWN_TEST //un-comment this to test a 1Hz down counter
 //#define UP_TEST //un-comment this to test a 1Hz up counter
 //#define DELAY_TEST //un-comment this to test 1 second delay with an up counter
+//#define OUTPUT_TEST //un-comment this to test output compare on PA5 (LED2 should toggle every second)
+
 
 UART_CONFIG UART2;
 TIM2_5_CONFIG TMR2;
+TIM2_5_CAPTURE_COMPARE_CONFIG CAPTURE_COMPARE;
 
 int main(void)
 {
@@ -41,8 +44,11 @@ int main(void)
 	uart_init(UART2, 9600); //init uart at 9600 baud
 
 	#ifdef DOWN_TEST
+		//down counter
 		TMR2.COUNTER_MODE = TIM2_5_DOWN;
-		tim2_5_init(TMR2);
+
+		//init + enable timer
+		tim2_5_init_enable(TMR2);
 		while(1)
 		{
 			char s[50]; //buffer to send number of seconds over USART2
@@ -53,8 +59,11 @@ int main(void)
 	#endif
 
 	#ifdef UP_TEST
+		//up counter
 		TMR2.COUNTER_MODE = TIM2_5_UP;
-		tim2_5_init(TMR2);
+
+		//init + enable timer
+		tim2_5_init_enable(TMR2);
 		while(1)
 		{
 			char s[50]; //buffer to send number of seconds over USART2
@@ -66,15 +75,35 @@ int main(void)
 
 	#ifdef DELAY_TEST
 		TMR2.COUNTER_MODE = TIM2_5_UP;
-		tim2_5_init(TMR2);
+		tim2_5_init_enable(TMR2);
 		while(1)
 		{
 			char s[50]; //buffer to send number of seconds over USART2
 			//reset seconds count
-			sprintf(s,"1 second past");//put message into buffer
+			sprintf(s,"1 second past\n\r");//put message into buffer
 			tim2_5_delay(TMR2); //1 second delay
 			uart_write_string(UART2.USART, s); //print to USART2
 		}
 	#endif
+
+	#ifdef OUTPUT_TEST
+		//up counter
+		TMR2.COUNTER_MODE = TIM2_5_UP;
+
+		//Initializing compare mode pin
+		CAPTURE_COMPARE.CAPTURE_COMPARE_MODE = TIM2_5_OUTPUT;
+		CAPTURE_COMPARE.CHANNEL = TIM2_5_CH1;
+		CAPTURE_COMPARE.OUTPUT_MODE = TIM2_5_TOGGLE;
+		CAPTURE_COMPARE.PIN_NUM = TIM2_CH1_PA5;
+		CAPTURE_COMPARE.PORT = GPIOA;
+
+		//init + enable output compare
+		tim2_5_init_capture_compare(TMR2,CAPTURE_COMPARE);
+
+		while(1)
+		{
+		}
+	#endif
+
 }
 

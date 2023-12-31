@@ -15,12 +15,25 @@
 #include "gpio.h"
 #include "stm32f4xx.h"
 
-void tim2_5_init_capture(TIM2_5_CAPTURE_CONFIG timer)
+void tim2_5_init_output_compare(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare);
+void tim2_5_init_input_capture(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare);
+void pin_init(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare);
+
+/*
+ * Function to initialize a given GPIO compare/capture pin as an alternate function
+ * for the given timer
+ */
+void pin_init(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare)
 {
+	//setup GPIO pin
 	GPIOx_PIN_CONFIG pin;
-	pin.PIN_NUM = timer.PIN_NUM;
+	pin.PIN_NUM = compare.PIN_NUM;
 	pin.PIN_MODE = GPIOx_PIN_ALTERNATE;
 
+	//determine which alternate function mode to set
+	//the GPIO pin as.
+	//
+	//Table 9. in Datasheet for mapping
 	if(timer.TMR == TIM2)
 	{
 		pin.ALT_FUNC = GPIOx_ALT_AF1;
@@ -34,8 +47,51 @@ void tim2_5_init_capture(TIM2_5_CAPTURE_CONFIG timer)
 		return;
 	}
 
-	gpio_init(timer.PORT, pin);
+	//init the GPIO given pin for the timer channel
+	gpio_init(compare.PORT, pin);
 }
+
+/*
+ * Function to initialize output compare for the given timer and pin
+ *
+ * 13.4.7 in Ref Manual
+ */
+void tim2_5_init_output_compare(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare)
+{
+	//check for the channel, since the register and bit position will change
+	//based on this, and set the bits required for the desired output
+	//compare mode
+	if(compare.CHANNEL == TIM2_5_CH1)
+	{
+		timer.TMR->CCMR1 |= (compare.OUTPUT_MODE << TIM_CCMR1_OC1M_Pos);
+	}
+	else if(compare.CHANNEL == TIM2_5_CH2)
+	{
+		timer.TMR->CCMR1 |= (compare.OUTPUT_MODE << TIM_CCMR1_OC2M_Pos);
+	}
+	else if(compare.CHANNEL == TIM2_5_CH3)
+	{
+		timer.TMR->CCMR2 |= (compare.OUTPUT_MODE << TIM_CCMR2_OC3M_Pos);
+	}
+	else if(compare.CHANNEL == TIM2_5_CH4)
+	{
+		timer.TMR->CCMR2 |= (compare.OUTPUT_MODE << TIM_CCMR2_OC4M_Pos);
+	}
+	else
+	{
+		return;
+	}
+
+	//enable capture/compare output
+	//13.4.9 in Ref Manual
+	timer.TMR->CCER |= (1U<<(compare.CHANNEL * 4));
+}
+
+void tim2_5_init_input_capture(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare)
+{
+
+}
+
 
 /*
  * Function to initialize a given timer and it's
@@ -89,7 +145,53 @@ void tim2_5_init(TIM2_5_CONFIG timer)
 	{
 		return;
 	}
+}
 
+/*
+ * Function to initialize + enable the timer immediately
+ */
+void tim2_5_init_enable(TIM2_5_CONFIG timer)
+{
+	tim2_5_init(timer);
+	tim2_5_enable(timer);
+}
+
+/*
+ * Function to initialize capture/compare mode for a given timer
+ * pin with the channel specified
+ */
+void tim2_5_init_capture_compare(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare)
+{
+	pin_init(timer, compare);
+
+	//init the timer
+	tim2_5_init(timer);
+
+	//check which compare mode is needed and init that mode
+	if(compare.CAPTURE_COMPARE_MODE == TIM2_5_OUTPUT)
+	{
+		tim2_5_init_output_compare(timer,compare);
+	}
+	else if(compare.CAPTURE_COMPARE_MODE == TIM2_5_INPUT)
+	{
+		tim2_5_init_input_capture(timer, compare);
+	}
+	else
+	{
+		return;
+	}
+
+	//enable timer
+	tim2_5_enable(timer);
+}
+
+/*
+ * Function to enable timer using CR1
+ *
+ * 13.4.1 in Ref Manual
+ */
+void tim2_5_enable(TIM2_5_CONFIG timer)
+{
 	//enable counter
 	timer.TMR->CR1 |= TIM_CR1_CEN_Msk;
 }
