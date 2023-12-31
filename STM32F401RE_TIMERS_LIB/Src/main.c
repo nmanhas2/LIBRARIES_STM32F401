@@ -6,7 +6,7 @@
  ******************************************************************************
  * @purpose
  *
- * Testing Timer library for STM32F401RE, by using a delay function, checking,
+ * Testing Timer library for STM32F401RE, by using a delay function, checking
  * count changes, and USART2
  *
  ******************************************************************************
