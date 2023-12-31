@@ -139,4 +139,10 @@ void tim2_5_init_enable(TIM2_5_CONFIG timer);
 void tim2_5_delay(TIM2_5_CONFIG timer);
 
 void tim2_5_enable(TIM2_5_CONFIG timer);
+
+void tim2_5_init_input_capture(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare);
+
+void tim2_5_capture_wait(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG capture);
+
+int tim2_5_capture_read(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG capture);
 #endif /* TIMER_H_ */

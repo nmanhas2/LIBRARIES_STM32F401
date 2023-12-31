@@ -87,9 +87,40 @@ void tim2_5_init_output_compare(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONF
 	timer.TMR->CCER |= (1U<<(compare.CHANNEL * 4));
 }
 
+/*
+ * Function to enable input capture on the given timer and
+ * channel
+ *
+ * 13.4.7 in Ref Manual
+ */
 void tim2_5_init_input_capture(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare)
 {
+	//set the capture/compare selection to be input on TI2 (IC1)
+	//for the given channel
+	if(compare.CHANNEL == TIM2_5_CH1)
+	{
+		timer.TMR->CCMR1 |= (1U << TIM_CCMR1_CC1S_Pos);
+	}
+	else if(compare.CHANNEL == TIM2_5_CH2)
+	{
+		timer.TMR->CCMR1 |= (1U << TIM_CCMR1_CC2S_Pos);
+	}
+	else if(compare.CHANNEL == TIM2_5_CH3)
+	{
+		timer.TMR->CCMR2 |= (1U << TIM_CCMR2_CC3S_Pos);
+	}
+	else if(compare.CHANNEL == TIM2_5_CH4)
+	{
+		timer.TMR->CCMR2 |= (1U << TIM_CCMR2_CC4S_Pos);
+	}
+	else
+	{
+		return;
+	}
 
+	//enable capture/compare output
+	//13.4.9 in Ref Manual
+	timer.TMR->CCER |= (1U<<(compare.CHANNEL * 4));
 }
 
 
@@ -126,8 +157,24 @@ void tim2_5_init(TIM2_5_CONFIG timer)
 
 	//set the prescaler and period
 	//clock speed (16MHz)/(prescaler * period) = desired delay
-	timer.TMR->PSC = timer.PRESCALER - 1;
-	timer.TMR->ARR = timer.PERIOD - 1;
+	if(timer.PRESCALER > 0)
+	{
+		timer.TMR->PSC = timer.PRESCALER - 1;
+	}
+	else
+	{
+		timer.TMR->PSC = 0;
+	}
+
+	if(timer.PERIOD > 0)
+	{
+		timer.TMR->ARR = timer.PERIOD - 1;
+	}
+	else
+	{
+		timer.TMR->ARR = 0;
+	}
+
 
 	//clear the counter
 	timer.TMR->CNT = 0;
@@ -217,4 +264,57 @@ void tim2_5_delay(TIM2_5_CONFIG timer)
 {
 	while(!(timer.TMR->SR & TIM_SR_UIF_Msk));
 	timer.TMR->SR &= ~TIM_SR_UIF_Msk;
+}
+
+/*
+ * Function to wait for an input to be captured.
+ *
+ * This happens when the a counter value has been captured
+ * in the TIMx_CCR1 register, which causes the CCxIF flag
+ * to be set. The counter value is captured when an edge has
+ * been detected on IC1, which matches the selected polarity.
+ * Since the CCER register has the polarity set to rising edge,
+ * by default, every rising edge will cause the flag to be set.
+ *
+ * 13.4.5/13.4.9 in Ref Manual
+ */
+void tim2_5_capture_wait(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG capture)
+{
+	while(!(timer.TMR->SR & (1U << (capture.CHANNEL + 1)))); //flags start on bit 1
+
+}
+
+/*
+ * Function to read an input capture value once the CCxIF flag
+ * has been set
+ *
+ * 13.4.5/13.4.13 in Ref Manual
+ */
+int tim2_5_capture_read(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG capture)
+{
+
+	tim2_5_capture_wait(timer, capture);
+
+	//determine channel, and return the value read in the
+	//corresponding capture/compare register (CCRx)
+	switch (capture.CHANNEL)
+	{
+		case (TIM2_5_CH1):
+			return timer.TMR->CCR1;
+			break;
+
+		case (TIM2_5_CH2):
+			return timer.TMR->CCR2;
+			break;
+
+		case (TIM2_5_CH3):
+			return timer.TMR->CCR3;
+			break;
+
+		case (TIM2_5_CH4):
+			return timer.TMR->CCR4;
+			break;
+		default:
+			return -1;
+	}
 }
