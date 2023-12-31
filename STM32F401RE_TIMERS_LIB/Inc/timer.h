@@ -130,19 +130,27 @@ typedef struct
 	int PERIOD;
 }TIM2_5_CONFIG;
 
+//function to initialize capture/compare mode depending on what is given
 void tim2_5_init_capture_compare(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare);
 
+//function to initialize a given timer
 void tim2_5_init(TIM2_5_CONFIG timer);
 
+//function to enable a given timer
 void tim2_5_init_enable(TIM2_5_CONFIG timer);
 
+//function for a simple delay with a given timer
 void tim2_5_delay(TIM2_5_CONFIG timer);
 
+//function to enable a given timer
 void tim2_5_enable(TIM2_5_CONFIG timer);
 
+//function to initialize input capture
 void tim2_5_init_input_capture(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare);
 
+//function to create a blocking delay until an input is captured
 void tim2_5_capture_wait(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG capture);
 
+//function to read an input capture
 int tim2_5_capture_read(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG capture);
 #endif /* TIMER_H_ */
