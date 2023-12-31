@@ -157,22 +157,22 @@ void tim2_5_init(TIM2_5_CONFIG timer)
 
 	//set the prescaler and period
 	//clock speed (16MHz)/(prescaler * period) = desired delay
-	if(timer.PRESCALER > 0)
+	if(timer.PRESCALER >= 0)
 	{
 		timer.TMR->PSC = timer.PRESCALER - 1;
 	}
 	else
 	{
-		timer.TMR->PSC = 0;
+		return;
 	}
 
-	if(timer.PERIOD > 0)
+	if(timer.PERIOD >= 0)
 	{
 		timer.TMR->ARR = timer.PERIOD - 1;
 	}
 	else
 	{
-		timer.TMR->ARR = 0;
+		return;
 	}
 
 
@@ -249,10 +249,10 @@ void tim2_5_enable(TIM2_5_CONFIG timer)
  * Whenever an update event occurs, the update flag
  * gets set. An update event is considered to be
  * when an overflow/underflow happens in the CR1
- * register, assuming UDIS=0. In downcounting
+ * register, assuming UDIS=0. In down counting
  * mode, an underflow event happens when the
  * ARR value is 0. An overflow happens once
- * the ARR value is reached in upcount mode.
+ * the ARR value is reached in up count mode.
  *
  * Waiting for the under/overflow essentially
  * waits for the counter to complete, then the
