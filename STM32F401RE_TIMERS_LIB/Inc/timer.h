@@ -103,6 +103,10 @@ typedef enum
 	TIM2_5_DOWN,
 }TIM2_5_COUNTER_MODE;
 
+/*
+ * Enumeration to differentiate between
+ * Input capture and Output compare mode
+ */
 typedef enum
 {
 	TIM2_5_INPUT,
@@ -122,6 +126,10 @@ typedef struct
 	TIM2_5_OUTPUT_MODE OUTPUT_MODE;
 }TIM2_5_CAPTURE_COMPARE_CONFIG;
 
+/*
+ * Struct containing basic parameters required
+ * to configure a timer
+ */
 typedef struct
 {
 	TIM_TypeDef * TMR;
