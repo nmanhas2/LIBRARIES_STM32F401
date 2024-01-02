@@ -28,6 +28,16 @@ int main(void)
 	//we want PA5 as an output for all the tests
 	PIN5.PIN_MODE = GPIOx_PIN_OUTPUT;
 	PIN5.PIN_NUM = GPIOx_PIN_5;
+	PIN5.OTYPER_MODE = GPIOx_OTYPER_PUSH_PULL;
+	PIN5.PUPDR_MODE = GPIOx_PUPDR_NONE;
+
+	//we want PC13 as an input for all input tests
+	//don't need to specify output type here, since
+	//the gpio_init() checks if it's an output pin,
+	//then sets the output type if needed
+	PIN13.PIN_MODE = GPIOx_PIN_INPUT;
+	PIN13.PIN_NUM = GPIOx_PIN_13;
+	PIN13.PUPDR_MODE = GPIOx_PUPDR_NONE;
 
 	#ifdef TOGGLE_TEST
 		gpio_init(GPIOA, PIN5); //init PA5 as an output
@@ -39,7 +49,7 @@ int main(void)
 	#endif
 
 	#ifdef OUTPUT_WRITE
-		gpio_init(GPIOA, pin); //init PA5 as output
+		gpio_init(GPIOA, PIN5); //init PA5 as output
 		while(1)
 		{
 			gpio_write_output(GPIOA, PIN5, GPIOx_SET_OUTPUT); //write output to high
@@ -53,6 +63,7 @@ int main(void)
 		//we want PC13 as an input for this test
 		PIN13.PIN_MODE = GPIOx_PIN_INPUT;
 		PIN13.PIN_NUM = GPIOx_PIN_13;
+		PIN13.PUPDR_MODE = GPIOx_PUPDR_NONE;
 
 		gpio_init(GPIOA, PIN5); //init PA5 as output
 		gpio_init(GPIOC, PIN13); //init PC13 as input
@@ -68,9 +79,6 @@ int main(void)
 	#endif
 
 	#ifdef OUTPUT_SETRESET
-		//we want PC13 as an input for this test
-		PIN13.PIN_MODE = GPIOx_PIN_INPUT;
-		PIN13.PIN_NUM = GPIOx_PIN_13;
 
 		gpio_init(GPIOA, PIN5); //init PA5 as output
 		gpio_init(GPIOC, PIN13); //init PC13 as input

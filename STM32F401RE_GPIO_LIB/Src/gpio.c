@@ -20,6 +20,12 @@ void gpio_set_moder(GPIO_TypeDef* gpioX, GPIOx_PIN_CONFIG pin);
 //function to set the alternate function you want
 void gpio_alt_func(GPIO_TypeDef* gpioX, GPIOx_PIN_CONFIG pin);
 
+//function to configure output type on an output pin
+void gpio_set_otyper(GPIO_TypeDef* gpioX, GPIOx_PIN_CONFIG pin);
+
+//function to configure internal resistor on a pin
+void gpio_set_pupdr(GPIO_TypeDef* gpioX, GPIOx_PIN_CONFIG pin);
+
 /*
  * Based on Fig. 3 in the datasheet, AHB1 Bus is where clock access
  * can be gained for all GPIO ports, each port has a corresponding
@@ -55,10 +61,41 @@ void gpio_init (GPIO_TypeDef* gpioX, GPIOx_PIN_CONFIG pin)
 	//set pin mode
 	gpio_set_moder(gpioX, pin);
 
+	gpio_set_pupdr(gpioX, pin);
+
 	//check if alternate function needs to be set
 	if(pin.PIN_MODE == GPIOx_PIN_ALTERNATE)
 	{
 		gpio_alt_func(gpioX, pin);
+	}
+
+	//set output type, if the pin is in output mode
+	if(pin.PIN_MODE == GPIOx_PIN_OUTPUT)
+	{
+		gpio_set_otyper(gpioX, pin);
+	}
+}
+
+/*
+ * Function for setting output type
+ *
+ * There are push-pull and open-drain output types
+ * available
+ *
+ * 8.4.2 in Ref Manual
+ */
+void gpio_set_otyper(GPIO_TypeDef* gpioX, GPIOx_PIN_CONFIG pin)
+{
+	//check for the output mode, 0 = push-pull,
+	//1 = open-drain
+	if(pin.OTYPER_MODE == GPIOx_OTYPER_PUSH_PULL)
+	{
+		gpioX->OTYPER &= ~(1U<<pin.PIN_NUM);
+	}
+
+	if(pin.OTYPER_MODE == GPIOx_OTYPER_OPEN_DRAIN)
+	{
+		gpioX->OTYPER |= (1U<<pin.PIN_NUM);
 	}
 }
 
@@ -72,9 +109,32 @@ void gpio_set_moder(GPIO_TypeDef* gpioX, GPIOx_PIN_CONFIG pin)
 {
 	//clear pin
 	gpioX->MODER &= ~(0x3 << (2*pin.PIN_NUM));
+
 	//set pin mode, need to multiply by 2 because MODER is 32bit and each pin has 2 bits
 	//that correspond to it's mode. PA15's mode for example can be set on bits 30 and 31
 	gpioX->MODER |= (pin.PIN_MODE << (2*pin.PIN_NUM));
+}
+
+/*
+ * Configure internal resistor on the given pin
+ *
+ * Pull-up, pull-down, or none are the option available
+ *
+ * 8.4.4 in Ref Manual
+ */
+void gpio_set_pupdr(GPIO_TypeDef* gpioX, GPIOx_PIN_CONFIG pin)
+{
+	//clear pupdr for the pin
+	gpioX->PUPDR &= ~(0x3 << (2*pin.PIN_NUM));
+
+	//check if it's not 'none', since the bits already
+	//been cleared
+	if(pin.PUPDR_MODE != GPIOx_PUPDR_NONE)
+	{
+		//2 bits correspond to each pin
+		gpioX->PUPDR |= (pin.PUPDR_MODE << (2*pin.PIN_NUM));
+	}
+
 }
 
 /*
