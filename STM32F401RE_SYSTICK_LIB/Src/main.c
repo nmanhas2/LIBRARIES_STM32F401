@@ -17,7 +17,7 @@
 #include <stdint.h>
 
 /* TESTS: */
-//#define DELAY_TEST //un-comment this to test a 1000ms (1 second) delay over USART2
+#define DELAY_TEST //un-comment this to test a 1000ms (1 second) delay over USART2
 
 UART_CONFIG UART2;
 int main(void)

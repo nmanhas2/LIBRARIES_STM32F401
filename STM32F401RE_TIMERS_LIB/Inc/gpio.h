@@ -46,6 +46,38 @@
 #define GPIOx_BSRR_SET	    1
 
 /*
+ * 2 different output types are available:
+ *
+ * Output push-pull = 0
+ * Output open-drain = 1
+ *
+ * 8.4.2 in Ref Manual
+ */
+typedef enum
+{
+	GPIOx_OTYPER_PUSH_PULL,
+	GPIOx_OTYPER_OPEN_DRAIN,
+	GPIOx_OTYPER_NONE
+}GPIOx_OTYPER_MODE;
+
+/*
+ * 3 different internal resistor modes available:
+ *
+ * No pull-up or pull-down = 00
+ * Pull-up = 01
+ * Pull-down = 10
+ *
+ * 8.4.4 in Ref Manual
+ */
+typedef enum
+{
+	GPIOx_PUPDR_NONE,
+	GPIOx_PUPDR_PULL_UP,
+	GPIOx_PUPDR_PULL_DOWN
+}GPIOx_PUPDR_MODE;
+
+
+/*
  * Each port has 16 configurable I/O's
  *
  * 8.2 in Ref Manual
@@ -71,7 +103,7 @@ typedef enum
 }GPIOx_PIN_NUM;
 
 /*
- * Four different port modes are available:
+ * Four different pin modes are available:
  *
  * Input = 00
  * Output = 01
@@ -126,6 +158,8 @@ typedef struct{
 	GPIOx_PIN_NUM PIN_NUM;
 	GPIOx_PIN_MODE PIN_MODE;
 	GPIOx_ALT_FUNC ALT_FUNC;
+	GPIOx_PUPDR_MODE PUPDR_MODE;
+	GPIOx_OTYPER_MODE OTYPER_MODE;
 }GPIOx_PIN_CONFIG;
 
 //toggling output

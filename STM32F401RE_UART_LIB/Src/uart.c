@@ -54,6 +54,8 @@ void uart_init(UART_CONFIG UART, uint32_t baudrate)
 
 		TX_Pin.PIN_NUM = UART.TX;
 
+		TX_Pin.PUPDR_MODE = GPIOx_PUPDR_NONE;
+
 		gpio_init(UART.PORT, TX_Pin);
 	}
 
@@ -70,6 +72,8 @@ void uart_init(UART_CONFIG UART, uint32_t baudrate)
 		}
 
 		RX_Pin.PIN_MODE = GPIOx_PIN_ALTERNATE;
+
+		RX_Pin.PUPDR_MODE = GPIOx_PUPDR_NONE;
 
 		RX_Pin.PIN_NUM = UART.RX;
 

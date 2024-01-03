@@ -29,6 +29,7 @@ void pin_init(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare)
 	GPIOx_PIN_CONFIG pin;
 	pin.PIN_NUM = compare.PIN_NUM;
 	pin.PIN_MODE = GPIOx_PIN_ALTERNATE;
+	pin.PUPDR_MODE = GPIOx_PUPDR_NONE;
 
 	//determine which alternate function mode to set
 	//the GPIO pin as.
