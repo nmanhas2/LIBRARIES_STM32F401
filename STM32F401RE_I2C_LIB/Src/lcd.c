@@ -20,10 +20,6 @@
 #include <string.h>
 #include "systick.h"
 
-//LCD Slave address, check p. 17 in
-//the LCD datasheet to verify
-#define LCD_SLAVE_ADDR 		0x3C
-
 /*
  * Initialize the I2C LCD
  *

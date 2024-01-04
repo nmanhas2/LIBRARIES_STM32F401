@@ -18,6 +18,10 @@
 #ifndef LCD_H_
 #define LCD_H_
 
+//LCD Slave address, check p. 17 in
+//the LCD datasheet to verify
+#define LCD_SLAVE_ADDR 		0x3C
+
 /*Section 12 in the LCD Datasheet for ALL instructions*/
 
 //Instruction to turn cursor + display on
