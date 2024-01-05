@@ -22,13 +22,13 @@
 UART_CONFIG UART2;
 int main(void)
 {
-	//UART for 9600 baudrate, PA3 as RX, PA2 as TX for USART2
+	//UART for 115200 baudrate, PA3 as RX, PA2 as TX for USART2
 	UART2.PORT = GPIOA;
 	UART2.RX = USART2_RX_PA3;
 	UART2.TX = USART2_TX_PA2;
 	UART2.USART = USART2;
 
-	uart_init(UART2, 9600); //init uart at 9600 baud
+	uart_init(UART2, 115200); //init uart at 9600 baud
 
 	#ifdef DELAY_TEST
 		int i = 1; //variable to hold number of seconds

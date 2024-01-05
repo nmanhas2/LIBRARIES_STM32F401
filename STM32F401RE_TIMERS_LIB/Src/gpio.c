@@ -61,18 +61,16 @@ void gpio_init (GPIO_TypeDef* gpioX, GPIOx_PIN_CONFIG pin)
 	//set pin mode
 	gpio_set_moder(gpioX, pin);
 
+	//set internal resistors
 	gpio_set_pupdr(gpioX, pin);
+
+	//set output type
+	gpio_set_otyper(gpioX, pin);
 
 	//check if alternate function needs to be set
 	if(pin.PIN_MODE == GPIOx_PIN_ALTERNATE)
 	{
 		gpio_alt_func(gpioX, pin);
-	}
-
-	//set output type, if the pin is in output mode
-	if(pin.PIN_MODE == GPIOx_PIN_OUTPUT)
-	{
-		gpio_set_otyper(gpioX, pin);
 	}
 }
 
@@ -222,6 +220,7 @@ void gpio_alt_func(GPIO_TypeDef* gpioX, GPIOx_PIN_CONFIG pin)
 
 	if(pin.PIN_NUM >  7)
 	{
-		gpioX->AFR[1] |= (pin.ALT_FUNC<<(pin.PIN_NUM * 4));
+		//subtracting the pin number by 8 because pin 8 start at bit 0 in the AFRH register
+		gpioX->AFR[1] |= (pin.ALT_FUNC<<((pin.PIN_NUM - 8 )* 4));
 	}
 }

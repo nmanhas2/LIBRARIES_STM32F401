@@ -17,7 +17,7 @@
 
 /* TESTS: */
 //#define WRITE_TEST //un-comment this to test writing over USART2
-#define READ_TEST //un-comment this to test reading over USART2, PA5 should go high in response to '1'
+//#define READ_TEST //un-comment this to test reading over USART2, PA5 should go high in response to '1'
 
 UART_CONFIG UART2;
 int main(void)

@@ -32,6 +32,7 @@ void adc_init(ADC_CONFIG adc)
 	GPIOx_PIN_CONFIG GPIO;
 	GPIO.PIN_MODE = GPIOx_PIN_ANALOG;
 	GPIO.PUPDR_MODE = GPIOx_PUPDR_NONE;
+	GPIO.OTYPER_MODE = GPIOx_OTYPER_PUSH_PULL;
 
 	//init gpio based on channel number
 	//Table 8. in datasheet to see mapping

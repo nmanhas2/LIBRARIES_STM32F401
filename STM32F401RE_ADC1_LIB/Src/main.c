@@ -19,7 +19,7 @@
 
 /* TESTS: */
 //#define SINGLE_TEST //un-comment this to test single conversion for ADC
-//#define CONTINUOUS_TEST //un-comment this to test continuous conversion for ADC
+#define CONTINUOUS_TEST //un-comment this to test continuous conversion for ADC
 
 UART_CONFIG UART2;
 ADC_CONFIG adc;

@@ -32,11 +32,9 @@ int main(void)
 	PIN5.PUPDR_MODE = GPIOx_PUPDR_NONE;
 
 	//we want PC13 as an input for all input tests
-	//don't need to specify output type here, since
-	//the gpio_init() checks if it's an output pin,
-	//then sets the output type if needed
 	PIN13.PIN_MODE = GPIOx_PIN_INPUT;
 	PIN13.PIN_NUM = GPIOx_PIN_13;
+	PIN5.OTYPER_MODE = GPIOx_OTYPER_PUSH_PULL;
 	PIN13.PUPDR_MODE = GPIOx_PUPDR_NONE;
 
 	#ifdef TOGGLE_TEST
