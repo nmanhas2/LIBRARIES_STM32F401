@@ -23,6 +23,7 @@
 //#define DELAY_TEST //un-comment this to test 1 second delay with an up counter
 //#define OUTPUT_TEST //un-comment this to test output compare on PA5 (LED2 should toggle every second)
 //#define INPUT_TEST //un-comment this to test input capture, wire PA5 (output compare) to PA6 (input capture)
+//#define PWM_TEST //un-comment this to test pwm mode on PA5
 
 UART_CONFIG UART2; //struct to configure UART2
 TIM2_5_CONFIG TMR2; //struct to configure TIM2 (this will be used for output compare as well)
@@ -40,8 +41,8 @@ int main(void)
 	UART2.USART = USART2;
 
 	//Initializing 1Hz timer
-	TMR2.PERIOD = 10000;
-	TMR2.PRESCALER = 1600;
+	TMR2.PERIOD = 100;
+	TMR2.PRESCALER = 16000;
 	TMR2.TMR = TIM2;
 
 	//init uart at 115200 baud
@@ -109,6 +110,28 @@ int main(void)
 		//init + enable output compare
 		tim2_5_init_capture_compare(TMR2,CAPTURE_COMPARE);
 
+		tim2_5_enable(TMR2);
+		while(1)
+		{
+		}
+	#endif
+
+	#ifdef PWM_TEST
+		//up counter
+		TMR2.COUNTER_MODE = TIM2_5_UP;
+
+		//Initializing compare mode pin for pwm mode 1
+		CAPTURE_COMPARE.CAPTURE_COMPARE_MODE = TIM2_5_OUTPUT;
+		CAPTURE_COMPARE.CHANNEL = TIM2_5_CH1;
+		CAPTURE_COMPARE.OUTPUT_MODE = TIM2_5_PWM_MODE1;
+		CAPTURE_COMPARE.PIN_NUM = TIM2_CH1_PA5;
+		CAPTURE_COMPARE.PORT = GPIOA;
+
+		//init + enable output compare in pwm mode with duty cycle of 50
+		//on rising edge
+		tim2_5_init_pwm(TMR2, CAPTURE_COMPARE, 50, TIM2_5_RISING_EDGE);
+		tim2_5_enable(TMR2);
+
 		while(1)
 		{
 		}
@@ -144,6 +167,9 @@ int main(void)
 
 		//init + enable input capture
 		tim2_5_init_capture_compare(TMR3,COMPARE_CAPTURE);
+
+		tim2_5_enable(TMR2);
+		tim2_5_enable(TMR3);
 		while(1)
 		{
 			timestamp = tim2_5_capture_read(TMR3, COMPARE_CAPTURE); //store count, should go up by 2000 every time PA5 goes high

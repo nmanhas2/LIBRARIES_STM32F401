@@ -17,6 +17,19 @@
 #include "stm32f4xx.h"
 
 /*
+ * Enumeration to differentiate between polarities
+ * for the PWM Timer mode
+ *
+ * 13.4.9 in Ref Manual
+ */
+typedef enum
+{
+	TIM2_5_RISING_EDGE,
+	TIM2_5_FALLING_EDGE,
+	TIM2_5_BOTH_EDGE = 3
+}TIM2_5_PWM_POLARITY;
+
+/*
  * Four channels are possible for each timers
  * capture/compare mode
  */
@@ -126,6 +139,8 @@ typedef struct
 	TIM2_5_OUTPUT_MODE OUTPUT_MODE;
 }TIM2_5_CAPTURE_COMPARE_CONFIG;
 
+
+
 /*
  * Struct containing basic parameters required
  * to configure a timer
@@ -153,12 +168,12 @@ void tim2_5_delay(TIM2_5_CONFIG timer);
 //function to enable a given timer
 void tim2_5_enable(TIM2_5_CONFIG timer);
 
-//function to initialize input capture
-void tim2_5_init_input_capture(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare);
-
 //function to create a blocking delay until an input is captured
 void tim2_5_capture_wait(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG capture);
 
 //function to read an input capture
 int tim2_5_capture_read(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG capture);
+
+//function to configure PWM
+void tim2_5_init_pwm(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, uint16_t duty, TIM2_5_PWM_POLARITY polarity);
 #endif /* TIMER_H_ */

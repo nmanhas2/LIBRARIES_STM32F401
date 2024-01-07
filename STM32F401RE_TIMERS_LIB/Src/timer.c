@@ -84,7 +84,7 @@ void tim2_5_init_output_compare(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONF
 		return;
 	}
 
-	//enable capture/compare output
+	//enable compare output
 	//13.4.9 in Ref Manual
 	timer.TMR->CCER |= (1U<<(compare.CHANNEL * 4));
 }
@@ -177,7 +177,6 @@ void tim2_5_init(TIM2_5_CONFIG timer)
 		return;
 	}
 
-
 	//clear the counter
 	timer.TMR->CNT = 0;
 
@@ -203,6 +202,55 @@ void tim2_5_init_enable(TIM2_5_CONFIG timer)
 {
 	tim2_5_init(timer);
 	tim2_5_enable(timer);
+}
+
+void tim2_5_init_pwm(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, uint16_t duty, TIM2_5_PWM_POLARITY polarity)
+{
+	//polarity is determined by the CCxP and
+	//CCxNP bits within the CCER register, these
+	//are bit masks that will work for all 4 channels
+	//in a "math way"
+	int ccxp, ccxnp;
+	ccxp = (1U << ((compare.CHANNEL * 4) + 1));
+	ccxnp = (1U << ((compare.CHANNEL * 4) + 3));
+
+	//enable output compare
+	tim2_5_init_capture_compare(timer, compare);
+
+	//check for the channel, then enable preload bit
+	//within the CCMRx register
+	switch (compare.CHANNEL )
+	{
+		case TIM2_5_CH1:
+			timer.TMR->CCMR1 |= TIM_CCMR1_OC1PE_Msk;
+			timer.TMR->CCR1 |= duty;
+		case TIM2_5_CH2:
+			timer.TMR->CCMR1 |= TIM_CCMR1_OC2PE_Msk;
+			timer.TMR->CCR2 |= duty;
+		case TIM2_5_CH3:
+			timer.TMR->CCMR2 |= TIM_CCMR2_OC3PE_Msk;
+			timer.TMR->CCR3 |= duty;
+		case TIM2_5_CH4:
+			timer.TMR->CCMR2 |= TIM_CCMR2_OC4PE_Msk;
+			timer.TMR->CCR4 |= duty;
+	}
+
+	//check polarity and configure the polarity bits
+	//in the CCER register
+	switch(polarity)
+	{
+
+		case TIM2_5_RISING_EDGE:
+			timer.TMR->CCER &= ~(ccxp | ccxnp);
+		case TIM2_5_FALLING_EDGE:
+			timer.TMR->CCER |= ccxp;
+			timer.TMR->CCER &= ~ccxnp;
+		case TIM2_5_BOTH_EDGE:
+			timer.TMR->CCER |= (ccxp | ccxnp);
+	}
+
+	//enable auto-reload preload
+	timer.TMR->CR1 |= TIM_CR1_ARPE_Msk;
 }
 
 /*
@@ -231,7 +279,7 @@ void tim2_5_init_capture_compare(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CON
 	}
 
 	//enable timer
-	tim2_5_enable(timer);
+	//tim2_5_enable(timer);
 }
 
 /*
