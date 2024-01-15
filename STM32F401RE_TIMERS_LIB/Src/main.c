@@ -88,7 +88,7 @@ int main(void)
 		{
 			char s[50]; //buffer to send number of seconds over USART2
 
-			sprintf(s,"1 second past\n\r");//put message into buffer
+			sprintf(s,"(X time) past\n\r");//put message into buffer
 
 			tim2_5_delay(TMR2); //1 second delay
 
