@@ -23,7 +23,7 @@
 //#define DELAY_TEST //un-comment this to test 1 second delay with an up counter
 //#define OUTPUT_TEST //un-comment this to test output compare on PA5 (LED2 should toggle every second)
 //#define INPUT_TEST //un-comment this to test input capture, wire PA5 (output compare) to PA6 (input capture)
-//#define PWM_TEST //un-comment this to test pwm mode on PA5
+#define PWM_TEST //un-comment this to test pwm mode on PA5
 
 UART_CONFIG UART2; //struct to configure UART2
 TIM2_5_CONFIG TMR2; //struct to configure TIM2 (this will be used for output compare as well)
@@ -122,9 +122,9 @@ int main(void)
 
 		//Initializing compare mode pin for pwm mode 1
 		CAPTURE_COMPARE.CAPTURE_COMPARE_MODE = TIM2_5_OUTPUT;
-		CAPTURE_COMPARE.CHANNEL = TIM2_5_CH1;
+		CAPTURE_COMPARE.CHANNEL = TIM2_5_CH2;
 		CAPTURE_COMPARE.OUTPUT_MODE = TIM2_5_PWM_MODE1;
-		CAPTURE_COMPARE.PIN_NUM = TIM2_CH1_PA5;
+		CAPTURE_COMPARE.PIN_NUM = TIM2_CH2_PA1;
 		CAPTURE_COMPARE.PORT = GPIOA;
 
 		//init + enable output compare in pwm mode with duty cycle of 50

@@ -245,7 +245,8 @@ void tim2_5_init_pwm(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare,
 	{
 
 		case TIM2_5_RISING_EDGE:
-			timer.TMR->CCER &= ~(ccxp | ccxnp);
+			timer.TMR->CCER &= ~(ccxp);
+			timer.TMR->CCER &= ~(ccxnp);
 			break;
 		case TIM2_5_FALLING_EDGE:
 			timer.TMR->CCER |= ccxp;
@@ -298,6 +299,12 @@ void tim2_5_enable(TIM2_5_CONFIG timer)
 {
 	//enable counter
 	timer.TMR->CR1 |= TIM_CR1_CEN_Msk;
+}
+
+void tim2_5_disable(TIM2_5_CONFIG timer)
+{
+	//enable counter
+	timer.TMR->CR1 &= ~TIM_CR1_CEN_Msk;
 }
 
 /*
@@ -374,4 +381,25 @@ int tim2_5_capture_read(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG captu
 		default:
 			return -1;
 	}
+}
+
+/*
+ * Function to read and return the count register value for a given timer
+ *
+ * 13.4.10 in Ref Manual
+ */
+uint32_t tim2_5_count_read(TIM2_5_CONFIG timer)
+{
+	return (timer.TMR->CNT);
+}
+
+/*
+ * Function to generate an update event, essentially clearing the count
+ * register
+ *
+ * 13.4.6 in Ref Manual
+ */
+void tim2_5_generate_event(TIM2_5_CONFIG timer)
+{
+	timer.TMR->EGR |= TIM_EGR_UG;
 }
