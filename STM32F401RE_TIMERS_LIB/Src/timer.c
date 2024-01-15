@@ -204,62 +204,6 @@ void tim2_5_init_enable(TIM2_5_CONFIG timer)
 	tim2_5_enable(timer);
 }
 
-void tim2_5_init_pwm(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, uint16_t duty, TIM2_5_PWM_POLARITY polarity)
-{
-	//polarity is determined by the CCxP and
-	//CCxNP bits within the CCER register, these
-	//are bit masks that will work for all 4 channels
-	//in a "math way"
-	int ccxp, ccxnp;
-	ccxp = (1U << ((compare.CHANNEL * 4) + 1));
-	ccxnp = (1U << ((compare.CHANNEL * 4) + 3));
-
-	//enable output compare
-	tim2_5_init_capture_compare(timer, compare);
-
-	//check for the channel, then enable preload bit
-	//within the CCMRx register
-	switch (compare.CHANNEL )
-	{
-		case TIM2_5_CH1:
-			timer.TMR->CCMR1 |= TIM_CCMR1_OC1PE_Msk;
-			timer.TMR->CCR1 |= duty;
-			break;
-		case TIM2_5_CH2:
-			timer.TMR->CCMR1 |= TIM_CCMR1_OC2PE_Msk;
-			timer.TMR->CCR2 |= duty;
-			break;
-		case TIM2_5_CH3:
-			timer.TMR->CCMR2 |= TIM_CCMR2_OC3PE_Msk;
-			timer.TMR->CCR3 |= duty;
-			break;
-		case TIM2_5_CH4:
-			timer.TMR->CCMR2 |= TIM_CCMR2_OC4PE_Msk;
-			timer.TMR->CCR4 |= duty;
-			break;
-	}
-
-	//check polarity and configure the polarity bits
-	//in the CCER register
-	switch(polarity)
-	{
-
-		case TIM2_5_RISING_EDGE:
-			timer.TMR->CCER &= ~(ccxp | ccxnp);
-			break;
-		case TIM2_5_FALLING_EDGE:
-			timer.TMR->CCER |= ccxp;
-			timer.TMR->CCER &= ~ccxnp;
-			break;
-		case TIM2_5_BOTH_EDGE:
-			timer.TMR->CCER |= (ccxp | ccxnp);
-			break;
-	}
-
-	//enable auto-reload preload
-	timer.TMR->CR1 |= TIM_CR1_ARPE_Msk;
-}
-
 /*
  * Function to initialize capture/compare mode for a given timer
  * pin with the channel specified
@@ -298,6 +242,74 @@ void tim2_5_enable(TIM2_5_CONFIG timer)
 {
 	//enable counter
 	timer.TMR->CR1 |= TIM_CR1_CEN_Msk;
+}
+
+void tim2_5_init_pwm(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, uint16_t duty, TIM2_5_PWM_POLARITY polarity)
+{
+	//polarity is determined by the CCxP and
+	//CCxNP bits within the CCER register, these
+	//are bit masks that will work for all 4 channels
+	//in a "math way"
+	int ccxp, ccxnp;
+	ccxp = (1U << ((compare.CHANNEL * 4) + 1));
+	ccxnp = (1U << ((compare.CHANNEL * 4) + 3));
+
+	//enable output compare
+	tim2_5_init_capture_compare(timer, compare);
+
+	//check for the channel, then enable preload bit
+	//within the CCMRx register
+	switch (compare.CHANNEL )
+	{
+		case TIM2_5_CH1:
+			timer.TMR->CCMR1 |= TIM_CCMR1_OC1PE_Msk;
+			timer.TMR->CCR1 = duty;
+			break;
+		case TIM2_5_CH2:
+			timer.TMR->CCMR1 |= TIM_CCMR1_OC2PE_Msk;
+			timer.TMR->CCR2 = duty;
+			break;
+		case TIM2_5_CH3:
+			timer.TMR->CCMR2 |= TIM_CCMR2_OC3PE_Msk;
+			timer.TMR->CCR3 = duty;
+			break;
+		case TIM2_5_CH4:
+			timer.TMR->CCMR2 |= TIM_CCMR2_OC4PE_Msk;
+			timer.TMR->CCR4 = duty;
+			break;
+	}
+
+	//check polarity and configure the polarity bits
+	//in the CCER register
+	switch(polarity)
+	{
+
+		case TIM2_5_RISING_EDGE:
+			timer.TMR->CCER &= ~(ccxp);
+			timer.TMR->CCER &= ~(ccxnp);
+			break;
+		case TIM2_5_FALLING_EDGE:
+			timer.TMR->CCER |= ccxp;
+			timer.TMR->CCER &= ~ccxnp;
+			break;
+		case TIM2_5_BOTH_EDGE:
+			timer.TMR->CCER |= (ccxp | ccxnp);
+			break;
+	}
+
+	//enable auto-reload preload
+	timer.TMR->CR1 |= TIM_CR1_ARPE_Msk;
+}
+
+/*
+ * Function to disable a given timer
+ *
+ * 13.4.1 in Ref Manual
+ */
+void tim2_5_disable(TIM2_5_CONFIG timer)
+{
+	//enable counter
+	timer.TMR->CR1 &= ~TIM_CR1_CEN_Msk;
 }
 
 /*
@@ -374,4 +386,25 @@ int tim2_5_capture_read(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG captu
 		default:
 			return -1;
 	}
+}
+
+/*
+ * Function to read and return the count register value for a given timer
+ *
+ * 13.4.10 in Ref Manual
+ */
+uint32_t tim2_5_count_read(TIM2_5_CONFIG timer)
+{
+	return (timer.TMR->CNT);
+}
+
+/*
+ * Function to generate an update event, essentially clearing the count
+ * register
+ *
+ * 13.4.6 in Ref Manual
+ */
+void tim2_5_generate_event(TIM2_5_CONFIG timer)
+{
+	timer.TMR->EGR |= TIM_EGR_UG;
 }

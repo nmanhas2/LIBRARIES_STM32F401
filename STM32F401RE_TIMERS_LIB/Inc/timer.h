@@ -139,8 +139,6 @@ typedef struct
 	TIM2_5_OUTPUT_MODE OUTPUT_MODE;
 }TIM2_5_CAPTURE_COMPARE_CONFIG;
 
-
-
 /*
  * Struct containing basic parameters required
  * to configure a timer
@@ -168,6 +166,9 @@ void tim2_5_delay(TIM2_5_CONFIG timer);
 //function to enable a given timer
 void tim2_5_enable(TIM2_5_CONFIG timer);
 
+//function to disable a given timer
+void tim2_5_disable(TIM2_5_CONFIG timer);
+
 //function to create a blocking delay until an input is captured
 void tim2_5_capture_wait(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG capture);
 
@@ -176,4 +177,10 @@ int tim2_5_capture_read(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG captu
 
 //function to configure PWM
 void tim2_5_init_pwm(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, uint16_t duty, TIM2_5_PWM_POLARITY polarity);
+
+//function to read and return the count register value for a given timer
+uint32_t tim2_5_count_read(TIM2_5_CONFIG timer);
+
+//function to generate a timer update event
+void tim2_5_generate_event(TIM2_5_CONFIG timer);
 #endif /* TIMER_H_ */
