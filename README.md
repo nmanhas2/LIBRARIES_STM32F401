@@ -2,7 +2,7 @@ Bare-metal STM32 Driver Libraries With Tests
 
 Using this NUCLEO Dev-board: https://www.st.com/en/evaluation-tools/nucleo-f401re.html
 
-This repo contains libraries within the Inc folders of each project that can be used for GPIO, UART, ADC, etc, functionalities for the STM32F401RE MCU. There are tests included within each project file, mostly using the on-board LED and button for this particular nucleo board. Most of the tests should only be run one at a time. 
+This repo contains libraries within the Inc folders of each project that can be used for GPIO, UART, ADC, etc, functionalities for the STM32F401RE MCU. There are tests included within each project file, mostly using the on-board LED and button for this particular nucleo board. There is also the inclusion of an I2C LCD Display for the I2C test, I did have difficulty in determining how to get the bottom half of the LCD display working, hence why only the top 8 characters work (https://www.orientdisplay.com/wp-content/uploads/2019/10/AMC0802BR-B-Y6WFDY-I2C.pdf). Most of the tests should only be run one at a time. 
 
 Used this to obtain the header ARM package CMSIS header files needed: https://www.st.com/en/embedded-software/stm32cubef4.html. You only need Drivers -> CMSIS -> Device and Include folders (for whichever MCU you're using). Since this is intended STM32F4x MCU, I only included the necessary header files for that MCU in the chip_headers/CMSIS folder. 
 
