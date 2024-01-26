@@ -18,7 +18,7 @@
 
 /*
  * Enumeration to differentiate between polarities
- * for the PWM Timer mode
+ * for the Compare/Capture Timer mode
  *
  * 13.4.9 in Ref Manual
  */
@@ -27,7 +27,7 @@ typedef enum
 	TIM2_5_RISING_EDGE,
 	TIM2_5_FALLING_EDGE,
 	TIM2_5_BOTH_EDGE = 3
-}TIM2_5_PWM_POLARITY;
+}TIM2_5_CC_POLARITY;
 
 /*
  * Four channels are possible for each timers
@@ -127,6 +127,22 @@ typedef enum
 }TIM2_5_CAPTURE_COMPARE_MODE;
 
 /*
+ * Enumeration for holding bit position values
+ * of all possible interrupts
+ *
+ * 13.4.4 in Ref Manual
+ */
+typedef enum
+{
+	TIM2_5_UPDATE_INTERRUPT,
+	TIM2_5_CC1_INTERRUPT, //CCx = Capture/Compare channel
+	TIM2_5_CC2_INTERRUPT,
+	TIM2_5_CC3_INTERRUPT,
+	TIM2_5_CC4_INTERRUPT,
+	TIM2_5_TRIGGER_INTERRUPT = 6,
+}TIM2_5_INTERRUPT_EN;
+
+/*
  * Struct containing the necessary parameters
  * for configuring TIM2-5 capture input/output
  */
@@ -137,9 +153,8 @@ typedef struct
 	TIM2_5_CAPTURE_COMPARE_MODE CAPTURE_COMPARE_MODE;
 	TIM2_5_CH CHANNEL;
 	TIM2_5_OUTPUT_MODE OUTPUT_MODE;
+	TIM2_5_CC_POLARITY CC_POLARITY;
 }TIM2_5_CAPTURE_COMPARE_CONFIG;
-
-
 
 /*
  * Struct containing basic parameters required
@@ -177,11 +192,20 @@ void tim2_5_capture_wait(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG capt
 int tim2_5_capture_read(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG capture);
 
 //function to configure PWM
-void tim2_5_init_pwm(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, uint16_t duty, TIM2_5_PWM_POLARITY polarity);
+void tim2_5_init_pwm(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, uint16_t duty, TIM2_5_CC_POLARITY polarity);
 
 //function to read and return the count register value for a given timer
 uint32_t tim2_5_count_read(TIM2_5_CONFIG timer);
 
 //function to generate a timer update event
 void tim2_5_generate_event(TIM2_5_CONFIG timer);
+
+//function for enabling timer interrupt
+void tim2_5_interrupt_enable(TIM2_5_CONFIG timer, TIM2_5_INTERRUPT_EN interrupt);
+
+//function for clearing a given timer interrupt flag
+void tim2_5_clear_interrupt_flag(TIM2_5_CONFIG timer, TIM2_5_INTERRUPT_EN interrupt);
+
+//function for setting the polarity of a capture/compare mode timer
+void tim2_5_cc_set_polarity(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, TIM2_5_CC_POLARITY polarity);
 #endif /* TIMER_H_ */

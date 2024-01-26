@@ -18,6 +18,7 @@
 void tim2_5_init_output_compare(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare);
 void tim2_5_init_input_capture(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare);
 void pin_init(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare);
+void tim2_5_nvic_enable(TIM2_5_CONFIG timer);
 
 /*
  * Function to initialize a given GPIO compare/capture pin as an alternate function
@@ -205,6 +206,76 @@ void tim2_5_init_enable(TIM2_5_CONFIG timer)
 }
 
 /*
+ * Function to initialize PWM on a given timer.
+ *
+ * Provide the polarity and duty cycle, as well as the compare configuration
+ * since the channel is required
+ */
+void tim2_5_init_pwm(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, uint16_t duty, TIM2_5_CC_POLARITY polarity)
+{
+
+	//enable output compare
+	tim2_5_init_capture_compare(timer, compare);
+
+	//check for the channel, then enable preload bit
+	//within the CCMRx register
+	switch (compare.CHANNEL )
+	{
+		case TIM2_5_CH1:
+			timer.TMR->CCMR1 |= TIM_CCMR1_OC1PE_Msk;
+			timer.TMR->CCR1 |= duty;
+			break;
+		case TIM2_5_CH2:
+			timer.TMR->CCMR1 |= TIM_CCMR1_OC2PE_Msk;
+			timer.TMR->CCR2 |= duty;
+			break;
+		case TIM2_5_CH3:
+			timer.TMR->CCMR2 |= TIM_CCMR2_OC3PE_Msk;
+			timer.TMR->CCR3 |= duty;
+			break;
+		case TIM2_5_CH4:
+			timer.TMR->CCMR2 |= TIM_CCMR2_OC4PE_Msk;
+			timer.TMR->CCR4 |= duty;
+			break;
+	}
+
+	tim2_5_cc_set_polarity(timer, compare, polarity);
+
+	//enable auto-reload preload
+	timer.TMR->CR1 |= TIM_CR1_ARPE_Msk;
+}
+
+
+void tim2_5_cc_set_polarity(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, TIM2_5_CC_POLARITY polarity)
+{
+	//polarity is determined by the CCxP and
+	//CCxNP bits within the CCER register, these
+	//are bit masks that will work for all 4 channels
+	//in a "math way"
+	int ccxp, ccxnp;
+	ccxp = (1U << ((compare.CHANNEL * 4) + 1));
+	ccxnp = (1U << ((compare.CHANNEL * 4) + 3));
+
+	//check polarity and configure the polarity bits
+	//in the CCER register
+	switch(polarity)
+	{
+
+		case TIM2_5_RISING_EDGE:
+			timer.TMR->CCER &= ~(ccxp);
+			timer.TMR->CCER &= ~(ccxnp);
+			break;
+		case TIM2_5_FALLING_EDGE:
+			timer.TMR->CCER |= ccxp;
+			timer.TMR->CCER &= ~ccxnp;
+			break;
+		case TIM2_5_BOTH_EDGE:
+			timer.TMR->CCER |= (ccxp | ccxnp);
+			break;
+	}
+}
+
+/*
  * Function to initialize capture/compare mode for a given timer
  * pin with the channel specified
  */
@@ -244,68 +315,6 @@ void tim2_5_enable(TIM2_5_CONFIG timer)
 	timer.TMR->CR1 |= TIM_CR1_CEN_Msk;
 }
 
-void tim2_5_init_pwm(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, uint16_t duty, TIM2_5_PWM_POLARITY polarity)
-{
-	//polarity is determined by the CCxP and
-	//CCxNP bits within the CCER register, these
-	//are bit masks that will work for all 4 channels
-	//in a "math way"
-	int ccxp, ccxnp;
-	ccxp = (1U << ((compare.CHANNEL * 4) + 1));
-	ccxnp = (1U << ((compare.CHANNEL * 4) + 3));
-
-	//enable output compare
-	tim2_5_init_capture_compare(timer, compare);
-
-	//check for the channel, then enable preload bit
-	//within the CCMRx register
-	switch (compare.CHANNEL )
-	{
-		case TIM2_5_CH1:
-			timer.TMR->CCMR1 |= TIM_CCMR1_OC1PE_Msk;
-			timer.TMR->CCR1 = duty;
-			break;
-		case TIM2_5_CH2:
-			timer.TMR->CCMR1 |= TIM_CCMR1_OC2PE_Msk;
-			timer.TMR->CCR2 = duty;
-			break;
-		case TIM2_5_CH3:
-			timer.TMR->CCMR2 |= TIM_CCMR2_OC3PE_Msk;
-			timer.TMR->CCR3 = duty;
-			break;
-		case TIM2_5_CH4:
-			timer.TMR->CCMR2 |= TIM_CCMR2_OC4PE_Msk;
-			timer.TMR->CCR4 = duty;
-			break;
-	}
-
-	//check polarity and configure the polarity bits
-	//in the CCER register
-	switch(polarity)
-	{
-
-		case TIM2_5_RISING_EDGE:
-			timer.TMR->CCER &= ~(ccxp);
-			timer.TMR->CCER &= ~(ccxnp);
-			break;
-		case TIM2_5_FALLING_EDGE:
-			timer.TMR->CCER |= ccxp;
-			timer.TMR->CCER &= ~ccxnp;
-			break;
-		case TIM2_5_BOTH_EDGE:
-			timer.TMR->CCER |= (ccxp | ccxnp);
-			break;
-	}
-
-	//enable auto-reload preload
-	timer.TMR->CR1 |= TIM_CR1_ARPE_Msk;
-}
-
-/*
- * Function to disable a given timer
- *
- * 13.4.1 in Ref Manual
- */
 void tim2_5_disable(TIM2_5_CONFIG timer)
 {
 	//enable counter
@@ -362,7 +371,7 @@ void tim2_5_capture_wait(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG capt
 int tim2_5_capture_read(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG capture)
 {
 
-	tim2_5_capture_wait(timer, capture);
+	//tim2_5_capture_wait(timer, capture);
 
 	//determine channel, and return the value read in the
 	//corresponding capture/compare register (CCRx)
@@ -393,7 +402,7 @@ int tim2_5_capture_read(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG captu
  *
  * 13.4.10 in Ref Manual
  */
-uint32_t tim2_5_count_read(TIM2_5_CONFIG timer)
+volatile uint32_t tim2_5_count_read(TIM2_5_CONFIG timer)
 {
 	return (timer.TMR->CNT);
 }
@@ -407,4 +416,72 @@ uint32_t tim2_5_count_read(TIM2_5_CONFIG timer)
 void tim2_5_generate_event(TIM2_5_CONFIG timer)
 {
 	timer.TMR->EGR |= TIM_EGR_UG;
+}
+
+/*
+ * Function for enabling the given interrupt on
+ * a specified timer using the DMA/Interrupt ENR
+ *
+ * The Timer must be enabled + initialized before this
+ *
+ * 13.4.4 in Ref Manual
+ */
+void tim2_5_interrupt_enable(TIM2_5_CONFIG timer, TIM2_5_INTERRUPT_EN interrupt)
+{
+	//clear the interrupt bit, then enable
+	timer.TMR->DIER &= ~(1U << interrupt);
+	timer.TMR->DIER |= (1U << interrupt);
+
+	tim2_5_nvic_enable(timer);
+}
+
+/*
+ * Function for clearing a given interrupt flag
+ * in the timer status register
+ *
+ * 13.4.5 in Ref Manual
+ */
+void tim2_5_clear_interrupt_flag(TIM2_5_CONFIG timer, TIM2_5_INTERRUPT_EN interrupt)
+{
+	timer.TMR->SR &= ~(1U << interrupt);
+}
+
+/*
+ * Function for enabling global interrupts for
+ * the timers, this device uses the a nested vectored
+ * interrupt controller for this.
+ *
+ * There are a few 32bit registers that cover each function,
+ * the mapping can be seen in Table 38 in the Ref
+ * Manual. The priority of interrupts is shown there as well.
+ *
+ * The NVIC interrupt enable register can be
+ * seen in 4.2.1 in the Cortex-M4 User Guide.
+ */
+void tim2_5_nvic_enable(TIM2_5_CONFIG timer)
+{
+	//check the which timer it is, then enable that global
+	//interrupt. the bit positions with ISER can be seen in Table 38
+	//in the Ref Manual, but bits 28 to 30 are TIM2 to TIM4, and
+	//TIM5 = 50
+	if(timer.TMR == TIM2)
+	{
+		NVIC->ISER[0] |= (1U << TIM2_IRQn);
+	}
+	else if(timer.TMR == TIM3)
+	{
+		NVIC->ISER[0] |= (1U << TIM3_IRQn);
+	}
+	else if(timer.TMR == TIM4)
+	{
+		NVIC->ISER[0] |= (1U << TIM4_IRQn);
+	}
+	else if(timer.TMR == TIM5)
+	{
+		NVIC->ISER[1] |= (1U << (TIM5_IRQn-32));
+	}
+	else
+	{
+		return;
+	}
 }
