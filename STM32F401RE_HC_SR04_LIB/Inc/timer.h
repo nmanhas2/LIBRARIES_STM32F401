@@ -208,4 +208,7 @@ void tim2_5_clear_interrupt_flag(TIM2_5_CONFIG timer, TIM2_5_INTERRUPT_EN interr
 
 //function for setting the polarity of a capture/compare mode timer
 void tim2_5_cc_set_polarity(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, TIM2_5_CC_POLARITY polarity);
+
+//function for disabling timer interrupt
+void tim2_5_interrupt_disable(TIM2_5_CONFIG timer, TIM2_5_INTERRUPT_EN interrupt);
 #endif /* TIMER_H_ */

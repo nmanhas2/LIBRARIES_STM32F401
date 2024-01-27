@@ -19,6 +19,7 @@ void tim2_5_init_output_compare(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONF
 void tim2_5_init_input_capture(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare);
 void pin_init(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare);
 void tim2_5_nvic_enable(TIM2_5_CONFIG timer);
+void tim2_5_nvic_disable(TIM2_5_CONFIG timer);
 
 /*
  * Function to initialize a given GPIO compare/capture pin as an alternate function
@@ -436,6 +437,20 @@ void tim2_5_interrupt_enable(TIM2_5_CONFIG timer, TIM2_5_INTERRUPT_EN interrupt)
 }
 
 /*
+ * Function for disabling the given interrupt on
+ * a specified timer using the DMA/Interrupt ENR
+ *
+ * 13.4.4 in Ref Manual
+ */
+void tim2_5_interrupt_disable(TIM2_5_CONFIG timer, TIM2_5_INTERRUPT_EN interrupt)
+{
+	//clear the interrupt bit, then enable
+	timer.TMR->DIER &= ~(1U << interrupt);
+
+	tim2_5_nvic_disable(timer);
+}
+
+/*
  * Function for clearing a given interrupt flag
  * in the timer status register
  *
@@ -444,6 +459,46 @@ void tim2_5_interrupt_enable(TIM2_5_CONFIG timer, TIM2_5_INTERRUPT_EN interrupt)
 void tim2_5_clear_interrupt_flag(TIM2_5_CONFIG timer, TIM2_5_INTERRUPT_EN interrupt)
 {
 	timer.TMR->SR &= ~(1U << interrupt);
+}
+
+/*
+ * Function for enabling global interrupts for
+ * the timers, this device uses the a nested vectored
+ * interrupt controller for this.
+ *
+ * There are a few 32bit registers that cover each function,
+ * the mapping can be seen in Table 38 in the Ref
+ * Manual. The priority of interrupts is shown there as well.
+ *
+ * The NVIC interrupt enable register can be
+ * seen in 4.2.1 in the Cortex-M4 User Guide.
+ */
+void tim2_5_nvic_disable(TIM2_5_CONFIG timer)
+{
+	//check the which timer it is, then enable that global
+	//interrupt. the bit positions with ISER can be seen in Table 38
+	//in the Ref Manual, but bits 28 to 30 are TIM2 to TIM4, and
+	//TIM5 = 50
+	if(timer.TMR == TIM2)
+	{
+		NVIC->ISER[0] &= ~(1U << TIM2_IRQn);
+	}
+	else if(timer.TMR == TIM3)
+	{
+		NVIC->ISER[0] &= ~(1U << TIM3_IRQn);
+	}
+	else if(timer.TMR == TIM4)
+	{
+		NVIC->ISER[0] &= ~(1U << TIM4_IRQn);
+	}
+	else if(timer.TMR == TIM5)
+	{
+		NVIC->ISER[1] &= ~(1U << (TIM5_IRQn-32));
+	}
+	else
+	{
+		return;
+	}
 }
 
 /*
