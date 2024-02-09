@@ -540,3 +540,4 @@ void tim2_5_nvic_enable(TIM2_5_CONFIG timer)
 		return;
 	}
 }
+
