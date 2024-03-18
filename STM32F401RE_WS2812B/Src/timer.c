@@ -219,9 +219,9 @@ void tim2_5_init_pwm(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare,
 	tim2_5_init_capture_compare(timer, compare);
 
 	//check for the channel, then enable preload bit
-	//within the CCMRx register
 	switch (compare.CHANNEL )
-	{
+	{	//within the CCMRx register
+
 		case TIM2_5_CH1:
 			timer.TMR->CCMR1 |= TIM_CCMR1_OC1PE_Msk;
 			timer.TMR->CCR1 |= duty;
@@ -246,6 +246,31 @@ void tim2_5_init_pwm(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare,
 	timer.TMR->CR1 |= TIM_CR1_ARPE_Msk;
 }
 
+/*
+ * Function to set PWM polarity, assuming that PWM mode has been configured already
+ *
+ * Provide duty cycle, timer, and compare configuration
+ */
+void time2_5_pwm_duty(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, uint16_t duty)
+{
+	//check for the channel, then enable preload bit
+	switch (compare.CHANNEL )
+	{
+			case TIM2_5_CH1:
+				timer.TMR->CCR1 = duty;
+				break;
+			case TIM2_5_CH2:
+				timer.TMR->CCR2 = duty;
+				break;
+			case TIM2_5_CH3:
+				timer.TMR->CCR3 = duty;
+				break;
+			case TIM2_5_CH4:
+				timer.TMR->CCR4 = duty;
+				break;
+		}
+	}
+}
 
 void tim2_5_cc_set_polarity(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, TIM2_5_CC_POLARITY polarity)
 {
