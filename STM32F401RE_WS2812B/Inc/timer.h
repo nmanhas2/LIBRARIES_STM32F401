@@ -213,5 +213,5 @@ void tim2_5_cc_set_polarity(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG c
 void tim2_5_interrupt_disable(TIM2_5_CONFIG timer, TIM2_5_INTERRUPT_EN interrupt);
 
 //function for setting pwm duty cycle, assuming that PWM mode has been configured already
-void time2_5_pwm_duty(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, uint16_t duty);
+void tim2_5_pwm_duty(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, uint16_t duty);
 #endif /* TIMER_H_ */

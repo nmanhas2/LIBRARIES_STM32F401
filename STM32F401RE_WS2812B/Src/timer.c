@@ -251,7 +251,7 @@ void tim2_5_init_pwm(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare,
  *
  * Provide duty cycle, timer, and compare configuration
  */
-void time2_5_pwm_duty(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, uint16_t duty)
+void tim2_5_pwm_duty(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, uint16_t duty)
 {
 	//check for the channel, then enable preload bit
 	switch (compare.CHANNEL )
@@ -268,9 +268,9 @@ void time2_5_pwm_duty(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare
 			case TIM2_5_CH4:
 				timer.TMR->CCR4 = duty;
 				break;
-		}
 	}
 }
+
 
 void tim2_5_cc_set_polarity(TIM2_5_CONFIG timer, TIM2_5_CAPTURE_COMPARE_CONFIG compare, TIM2_5_CC_POLARITY polarity)
 {

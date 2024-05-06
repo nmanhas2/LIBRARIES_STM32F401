@@ -9,6 +9,7 @@
  * Testing HC-SR04 ultrasonic sensor
  *
  * Datasheet for HC-SR04: https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
+ * Datasheet for buzzer: https://product.tdk.com/en/system/files?file=dam/doc/product/sw_piezo/sw_piezo/piezo-buzzer/catalog/piezoelectronic_buzzer_ps_en.pdf
  *
  ******************************************************************************
 */
@@ -49,6 +50,9 @@ const int TEN_MICROSECONDS_COUNT = 1;
 //will happen before the trigger pin goes high
 const int TRIGGER_DELAY_MILLISECONDS = 60;
 
+//distance measurement in CM that is required to activate the buzzer, in this case it's < 10cm by default
+const int BUZZER_MEASUREMENT = 10;
+
 /*
  * Enumeration to keep track of ultrasonic state
  *
@@ -84,6 +88,15 @@ TIM2_5_CONFIG TMR2 = {
 					  PERIOD
 					 };
 
+//configuration for the PWM timer, the numbers are fairly arbitrary, just picked based on what sounded good based
+//on the noise made from the buzzer
+TIM2_5_CONFIG TMR3 = {
+					  TIM3,
+					  TIM2_5_UP,
+					  PRESCALER * 100000,
+					  PERIOD / 500
+					 };
+
 //trigger pin, this needs to go high for 10us to start the distancing
 //this is why it is configured as an output
 GPIOx_PIN_CONFIG TRIGGER_PIN = {
@@ -107,9 +120,22 @@ TIM2_5_CAPTURE_COMPARE_CONFIG ECHO_PIN = {
 										  TIM2_5_NONE
 										 };
 
+//buzzer pin configuration to set it up as a PWM on PC7 using Channel 2 for TIM3
+//if the measurement distance is < 10CM, it will activate the PWM timer, otherwise it will be disabled
+TIM2_5_CAPTURE_COMPARE_CONFIG BUZZER_PIN = {
+											TIM3_CH2_PC7,
+											GPIOC,
+											TIM2_5_OUTPUT,
+											TIM2_5_CH2,
+											TIM2_5_PWM_MODE1,
+										    };
+
 //integers to store counter values during the rising edge/falling edge of the echo pin input capture.
 volatile int risingCount = 0;
 volatile int fallingCount = 0;
+
+//integer to store the distance measurement
+volatile int measurement = 0;
 
 //enum to keep track of current state of ultrasonic sensor
 ULTRASONIC_STATE CURRENT_STATE = TRIGGER_HIGH;
@@ -124,6 +150,7 @@ int main(void)
 
 	//configure trigger pin for GPIOA
 	gpio_init(GPIOA, TRIGGER_PIN);
+	tim2_5_init_pwm(TMR3, BUZZER_PIN, 50, TIM2_5_RISING_EDGE);
 	#ifdef HCSR04_TEST
 
 		//initialize + enable timer immediately with input capture on PA1
@@ -131,6 +158,7 @@ int main(void)
 		tim2_5_enable(TMR2);
 		while(1)
 		{
+			//gpio_toggle_output(GPIOA, BUZZER_PIN);
 			//switch
 			switch (CURRENT_STATE)
 			{
@@ -155,6 +183,7 @@ int main(void)
 
 					//enable interrupts for capture/compare channel 2, in line with the ECHO_PIN configuration
 					tim2_5_interrupt_enable(TMR2, TIM2_5_CC2_INTERRUPT);
+
 					break;
 
 				//both echo states should do nothing outside the interrupt, since the CURRENT_STATE and the input capture
@@ -169,7 +198,18 @@ int main(void)
 					//sprintf the count in CM. the timer is set up for 10uS from the prescaler, but the formula for
 					//distance measurement from the ultrasonic datasheet is: distance (CM) = time (uS) / 58, so the
 					//count time must be mulitiplied by 10 to convert to uS since the timer is in 10uS increments
-					sprintf(str, "%i CM\n\r", ((fallingCount - risingCount)*10)/CM_DIVISOR);
+					measurement = ((fallingCount - risingCount)*10)/CM_DIVISOR;
+					sprintf(str, "%i CM\n\r", measurement);
+
+					//enable/disable the PWM timer based on the measurement
+					if(measurement < BUZZER_MEASUREMENT)
+					{
+						tim2_5_enable(TMR3);
+					}
+					else
+					{
+						tim2_5_disable(TMR3);
+					}
 
 					//write the distance to uart using the str buffer
 					uart_write_string(USART2, str);
