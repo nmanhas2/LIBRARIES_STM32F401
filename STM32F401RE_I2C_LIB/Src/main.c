@@ -25,14 +25,14 @@ int main(void)
 	//struct configure i2c
 	I2C_CONFIG i2c;
 	i2c.FREQ_IN_MHz = 16;
-	i2c.I2C = I2C1;
+	i2c.I2C = I2C3;
 
 	//configure SCL for PB8
-	I2C_SCL_CONFIG scl = {I2C1_SCL_PB8, GPIOB};
+	I2C_SCL_CONFIG scl = {I2C3_SCL_PA8, GPIOA};
 	i2c.SCL_CONFIG = scl;
 
 	//configure SDA for PB9
-	I2C_SDA_CONFIG sda = {I2C1_SDA_PB9, GPIOB};
+	I2C_SDA_CONFIG sda = {I2C3_SDA_PB4, GPIOB};
 	i2c.SDA_CONFIG = sda;
 
 	//init i2c

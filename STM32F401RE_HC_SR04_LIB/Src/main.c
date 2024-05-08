@@ -6,10 +6,13 @@
  ******************************************************************************
  * @purpose
  *
- * Testing HC-SR04 ultrasonic sensor
+ * Testing HC-SR04, with the addition of a buzzer and I2C LCD display for the purposes of displaying
+ * distance measurements in CM and a mini security alarm by having the buzzer activate when an object is
+ * detected at less than 10CM .
  *
  * Datasheet for HC-SR04: https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
  * Datasheet for buzzer: https://product.tdk.com/en/system/files?file=dam/doc/product/sw_piezo/sw_piezo/piezo-buzzer/catalog/piezoelectronic_buzzer_ps_en.pdf
+ * Datasheet for I2C LCD display: https://www.orientdisplay.com/wp-content/uploads/2019/10/AMC0802BR-B-Y6WFDY-I2C.pdf
  *
  ******************************************************************************
 */
@@ -18,6 +21,8 @@
 #include "gpio.h"
 #include "timer.h"
 #include "systick.h"
+#include "i2c.h"
+#include "lcd.h"
 #include <stdio.h>
 #include <stdint.h>
 
@@ -53,6 +58,12 @@ const int TRIGGER_DELAY_MILLISECONDS = 60;
 //distance measurement in CM that is required to activate the buzzer, in this case it's < 10cm by default
 const int BUZZER_MEASUREMENT = 10;
 
+//duty cycle for the buzzer PWM timer (TMR3)
+const int PWM_DUTY = 50;
+
+//frequency for the I2C clock speed, in MHz
+const int I2C_FREQ_MHZ = 16;
+
 /*
  * Enumeration to keep track of ultrasonic state
  *
@@ -78,6 +89,27 @@ UART_CONFIG UART2 = {
 					 USART2_TX_PA2,
 					 USART2,
 					 GPIOA
+					};
+
+//I2C SDA line will be on PB4 using I2C3
+const I2C_SDA_CONFIG SDA_PIN = {
+						 	 	I2C3_SDA_PB4,
+								GPIOB
+						 	   };
+
+//I2C SCL line will be on PA8 using I2C3
+const I2C_SCL_CONFIG SCL_PIN = {
+						 	 	I2C3_SCL_PA8,
+								GPIOA
+						 	   };
+
+//configuration for I2C3, using the default clock frequency (16MHz) with the
+//configured SDA and SCL lines
+I2C_CONFIG MY_I2C = {
+		 	 	 	 SCL_PIN,
+					 SDA_PIN,
+					 I2C3,
+					 I2C_FREQ_MHZ
 					};
 
 //configuration for about 10us timer
@@ -128,7 +160,7 @@ TIM2_5_CAPTURE_COMPARE_CONFIG BUZZER_PIN = {
 											TIM2_5_OUTPUT,
 											TIM2_5_CH2,
 											TIM2_5_PWM_MODE1,
-										    };
+										   };
 
 //integers to store counter values during the rising edge/falling edge of the echo pin input capture.
 volatile int risingCount = 0;
@@ -136,6 +168,8 @@ volatile int fallingCount = 0;
 
 //integer to store the distance measurement
 volatile int measurement = 0;
+
+volatile int previousMeasurement = 0;
 
 //enum to keep track of current state of ultrasonic sensor
 ULTRASONIC_STATE CURRENT_STATE = TRIGGER_HIGH;
@@ -148,11 +182,17 @@ int main(void)
 	//init uart at 115200 baud
 	uart_init(UART2, UART_BAUDRATE);
 
-	//configure trigger pin for GPIOA
+	//initialize trigger pin for GPIOA
 	gpio_init(GPIOA, TRIGGER_PIN);
-	tim2_5_init_pwm(TMR3, BUZZER_PIN, 50, TIM2_5_RISING_EDGE);
-	#ifdef HCSR04_TEST
 
+	//initialize the PWM timer for the buzzer at 50% duty rising edge
+	tim2_5_init_pwm(TMR3, BUZZER_PIN, PWM_DUTY, TIM2_5_RISING_EDGE);
+
+	//initialize i2c for I2C3 and the LCD
+	i2c_init(MY_I2C);
+
+
+	#ifdef HCSR04_TEST
 		//initialize + enable timer immediately with input capture on PA1
 		tim2_5_init_capture_compare(TMR2, ECHO_PIN);
 		tim2_5_enable(TMR2);
@@ -199,7 +239,7 @@ int main(void)
 					//distance measurement from the ultrasonic datasheet is: distance (CM) = time (uS) / 58, so the
 					//count time must be mulitiplied by 10 to convert to uS since the timer is in 10uS increments
 					measurement = ((fallingCount - risingCount)*10)/CM_DIVISOR;
-					sprintf(str, "%i CM\n\r", measurement);
+					sprintf(str, "%i CM    \n\r", measurement);
 
 					//enable/disable the PWM timer based on the measurement
 					if(measurement < BUZZER_MEASUREMENT)
@@ -209,6 +249,13 @@ int main(void)
 					else
 					{
 						tim2_5_disable(TMR3);
+					}
+
+					if(measurement != previousMeasurement)
+					{
+						previousMeasurement = measurement;
+						lcd_init(MY_I2C);
+						lcd_write(MY_I2C, str);
 					}
 
 					//write the distance to uart using the str buffer
